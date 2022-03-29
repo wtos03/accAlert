@@ -1,0 +1,11 @@
+/home/tos/kria/accAlert/build/CMakeFiles/install/local.dir
+/home/tos/kria/accAlert/build/CMakeFiles/edit_cache.dir
+/home/tos/kria/accAlert/build/CMakeFiles/package_source.dir
+/home/tos/kria/accAlert/build/CMakeFiles/install.dir
+/home/tos/kria/accAlert/build/CMakeFiles/list_install_components.dir
+/home/tos/kria/accAlert/build/CMakeFiles/rebuild_cache.dir
+/home/tos/kria/accAlert/build/CMakeFiles/package.dir
+/home/tos/kria/accAlert/build/CMakeFiles/smartcam.dir
+/home/tos/kria/accAlert/build/CMakeFiles/install/strip.dir
+/home/tos/kria/accAlert/build/CMakeFiles/ivas_airender.dir
+/home/tos/kria/accAlert/build/CMakeFiles/ivas_xpp.dir
