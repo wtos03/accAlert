@@ -1,0 +1,4 @@
+To combine split zip file into one zip file use command
+$ zip -F caracc6.zip --out  single_file.zip
+
+Then unzip files same as others 
