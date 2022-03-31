@@ -116,7 +116,7 @@ bool crash_algorithm ( int *x,int *y,int *width,int *height,int object)
    bool accident_status = false;
    
 
-   printf (" Number of object :  %d \n",object);
+   // printf (" Number of object :  %d \n",object);
    for (i = 0 ; i < object ; i++)
    {
      
@@ -138,11 +138,12 @@ bool crash_algorithm ( int *x,int *y,int *width,int *height,int object)
        { // Comapre X and Y
             deltaX  = abs(*(x+i) - *(x+j));
             deltaY = abs(*(y+i) - *(y+j));
- //           if ((deltaX < OBJECT_OVERLAPX) || (deltaY < OBJECT_OVERLAPY))
-            if ((deltaX < OBJECT_OVERLAPX) )
+            if ((deltaX < OBJECT_OVERLAPX) && (deltaY < OBJECT_OVERLAPY))
+ //           if ((deltaX < OBJECT_OVERLAPX) )
             {
                accident_status  = true;
                get_set_accident_status (SET_VALUE,accident_status);
+               printf (" Obj: %d J: %d X: %d Y: %d diffX: %d diffY: %d  Acc Status : %d \n" ,i,j,*(x+i), *(y+i),deltaX,deltaY,accident_status);
                return accident_status;    //Accident found no need to check further
             }
             else
@@ -151,7 +152,7 @@ bool crash_algorithm ( int *x,int *y,int *width,int *height,int object)
                get_set_accident_status (SET_VALUE,accident_status);
             }
        }
-       printf (" Object: %d J: %d CenterX: %d CenterY: %d DeltaX: %d DeltaY: %d Accident status : %d \n" ,i,j,*(x+i), *(y+i),deltaX,deltaY,accident_status);
+//       printf (" Object: %d J: %d CenterX: %d CenterY: %d DeltaX: %d DeltaY: %d Accident status : %d \n" ,i,j,*(x+i), *(y+i),deltaX,deltaY,accident_status);
       }
     }
    return accident_status;
@@ -366,7 +367,7 @@ overlay_node_foreach (GNode * node, gpointer kpriv_ptr)
               new_ymax / 2), Scalar (uvScalar), kpriv->line_thickness, 1, 0);
 
         // invtos Put text at the center of box
-      /*  sprintf (obj_id,"%d",save_object(GET_NO_OBJECT,0,0,0,0));
+        sprintf (obj_id,"%d",save_object(GET_NO_OBJECT,0,0,0,0));
         putText (frameinfo->lumaImg, obj_id,
             cv::Point (centerX,centerY), kpriv->font,
             kpriv->font_size/2,  (0,255,0), 1, 1);
@@ -374,7 +375,7 @@ overlay_node_foreach (GNode * node, gpointer kpriv_ptr)
         putText (frameinfo->chromaImg, obj_id,
             cv::Point (centerX,centerY), kpriv->font,
             kpriv->font_size/2,(0,255,0), 1, 1);
-     */
+     
      }
 
       if (label_present) {
