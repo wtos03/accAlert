@@ -9,6 +9,6 @@
 // Define variable for Crash Algorithm
 #define  OBJECT_SIZE 500
 #define  MID_SCREEN_X 800 //Resolution /2
-#define  MID_SCREEN_LIMIT 50  
-#define  OBJECT_OVERLAPX 180
-#define  OBJECT_OVERLAPY 300
+#define  MID_SCREEN_DEVIATION 50  
+#define  OBJECT_OVERLAPX -20  // More negative mean more overlap
+#define  OBJECT_OVERLAPY -20

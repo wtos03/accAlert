@@ -87,7 +87,7 @@ struct ivas_xoverlaypriv
   Clock::time_point startClk;
 };
 
-/*--------------------------------------------------  */
+/*--Added by Invtos------------------------------------------------  */
 
  bool get_set_accident_status (int action,bool flag)
 {
@@ -101,27 +101,22 @@ struct ivas_xoverlaypriv
   
 }
 
-/*
-int *x   Center X of boundary box
-int *y   Center Y of boundary box
-object   number of detected object
-
-*/
-
 bool crash_algorithm ( int *x,int *y,int *width,int *height,int object)
 {
    int i,j;
-   unsigned int deltaX = 0;
-   unsigned int deltaY = 0;
+   unsigned int lengthX = 0;
+   unsigned int lengthY = 0;
+   int deltaX = 0;
+   int deltaY = 0;
    bool accident_status = false;
-   
+   int  centerX;
 
    // printf (" Number of object :  %d \n",object);
    for (i = 0 ; i < object ; i++)
    {
-     
+     centerX = (*(x+i))+ *(width+i)/2;
      // Check object size more than specific size may be accident
-     accident_status  = ((*(width+i)> OBJECT_SIZE) && (*(height+i) > OBJECT_SIZE) && (abs(*(x+i)- MID_SCREEN_X) < MID_SCREEN_LIMIT));
+     accident_status  = ((*(width+i)> OBJECT_SIZE) && (*(height+i) > OBJECT_SIZE) && (abs(centerX- MID_SCREEN_X) < MID_SCREEN_DEVIATION));
      if (accident_status)
      {
         printf ("Object width : %d  Height : %d  X = %d \n",*(width+i),*(height+i), *(x+i));
@@ -135,22 +130,39 @@ bool crash_algorithm ( int *x,int *y,int *width,int *height,int object)
       else
       {
        for (j ; j < object ; j++)
-       { // Comapre X and Y
-            deltaX  = abs(*(x+i) - *(x+j));
-            deltaY = abs(*(y+i) - *(y+j));
-            if ((deltaX < OBJECT_OVERLAPX) && (deltaY < OBJECT_OVERLAPY))
- //           if ((deltaX < OBJECT_OVERLAPX) )
-            {
-               accident_status  = true;
-               get_set_accident_status (SET_VALUE,accident_status);
-               printf (" Obj: %d J: %d X: %d Y: %d diffX: %d diffY: %d  Acc Status : %d \n" ,i,j,*(x+i), *(y+i),deltaX,deltaY,accident_status);
-               return accident_status;    //Accident found no need to check further
-            }
-            else
-            {
-               accident_status  = false;
-               get_set_accident_status (SET_VALUE,accident_status);
-            }
+       { // If distance between Xmin of Object1 and Xmax of Object2 < summation of two object width
+         // This mean ovelap occured
+         // Compare x(i) or x(j)
+         if (*(x+i) > *(x+j))
+         {
+              lengthX = ((*(x+i)+*(width+i)) - *(x+j));
+         }
+         else
+         {
+              lengthX = ((*(x+j)+*(width+j)) - *(x+i));
+         }
+         deltaX = (lengthX -(*(width+i)+*(width+j)));
+          if (*(y+i) > *(y+j))
+         {
+              lengthY = ((*(y+i)+*(height+i)) - *(y+j));
+         }
+         else
+         {
+              lengthY = ((*(y+j)+*(height+j)) - *(y+i));
+         }
+         deltaY = (lengthY -(*(height+i)+*(height+j)));
+         if ((deltaX < OBJECT_OVERLAPX) && (deltaY < OBJECT_OVERLAPY))
+          {
+            accident_status  = true;
+            get_set_accident_status (SET_VALUE,accident_status);
+            printf (" Obj: %d J: %d X: %d Y: %d diffX: %d diffY: %d  Acc Status : %d \n" ,i,j,*(x+i), *(y+i),deltaX,deltaY,accident_status);
+            return accident_status;    //Accident found no need to check further
+          }
+          else
+          {
+            accident_status  = false;
+            get_set_accident_status (SET_VALUE,accident_status);
+          }
        }
 //       printf (" Object: %d J: %d CenterX: %d CenterY: %d DeltaX: %d DeltaY: %d Accident status : %d \n" ,i,j,*(x+i), *(y+i),deltaX,deltaY,accident_status);
       }
@@ -163,24 +175,23 @@ bool crash_algorithm ( int *x,int *y,int *width,int *height,int object)
 int save_object (int action, int x, int y, int w, int h)
 {
   // Don't forget to put Static if not all value are gone.
-  static int centerX[MAX_OBJECT];
-  static int centerY[MAX_OBJECT];
+  static int Xmin[MAX_OBJECT];
+  static int Ymin[MAX_OBJECT];
   static int width[MAX_OBJECT];
   static int height[MAX_OBJECT];
   static int no_object = 0;
  
   if ( action ==   COUNT_OBJECT )
   {
-    centerX[no_object] = x;
-    centerY[no_object] = y;
+    Xmin[no_object] = x;
+    Ymin[no_object] = y;
     width[no_object] = w;
     height[no_object] = h;
     no_object++;
   }
   if (action == CHK_ACCIDENT )
   {
-    crash_algorithm (centerX, centerY,width,height, no_object);
- //   printf (" ***** Accident Status from each frame : %d  ***** \n",get_set_accident_status(GET_VALUE,0));
+    crash_algorithm (Xmin,Ymin,width,height, no_object);
     no_object = 0;  // Start new frame ??
   }
   return no_object;
@@ -210,7 +221,7 @@ void show_status (gpointer kpriv_ptr,bool acc_status)
 
 }
 
-/*---------------------------------------------------------------------------*/
+/* End added by Invtos -------------------------------------------------------------------------*/
 
 
 /* Check if the given classification is to be filtered */
@@ -320,7 +331,8 @@ overlay_node_foreach (GNode * node, gpointer kpriv_ptr)
     int centerY = new_ymin + prediction->bbox.height/2;
     int width = prediction->bbox.width;
     int height = prediction->bbox.height;
-    save_object(COUNT_OBJECT,centerX,centerY,width,height);
+    save_object(COUNT_OBJECT,new_xmin,new_ymin,width,height);
+
   // ---------------------------------------------- 
     
    if (label_present) {
@@ -370,12 +382,8 @@ overlay_node_foreach (GNode * node, gpointer kpriv_ptr)
         sprintf (obj_id,"%d",save_object(GET_NO_OBJECT,0,0,0,0));
         putText (frameinfo->lumaImg, obj_id,
             cv::Point (centerX,centerY), kpriv->font,
-            kpriv->font_size/2,  (0,255,0), 1, 1);
-
-        putText (frameinfo->chromaImg, obj_id,
-            cv::Point (centerX,centerY), kpriv->font,
             kpriv->font_size/2,(0,255,0), 1, 1);
-     
+
      }
 
       if (label_present) {
@@ -398,7 +406,7 @@ overlay_node_foreach (GNode * node, gpointer kpriv_ptr)
         putText (frameinfo->chromaImg, label_string, cv::Point (new_xmin / 2,
                 new_ymin / 2 + frameinfo->y_offset / 2), kpriv->font,
             kpriv->font_size / 2, Scalar (uvScalar), 1, 1);
-    //*/ 
+       */ 
 
       }
     } else if (frameinfo->inframe->props.fmt == IVAS_VFMT_BGR8) {
@@ -410,6 +418,12 @@ overlay_node_foreach (GNode * node, gpointer kpriv_ptr)
               prediction->bbox.y),Point (prediction->bbox.width + prediction->bbox.x,
               prediction->bbox.height + prediction->bbox.y), Scalar (clr.blue,
               clr.green, clr.red), kpriv->line_thickness, 1, 0);
+
+        // invtos Put text at the center of box
+        sprintf (obj_id,"%d",save_object(GET_NO_OBJECT,0,0,0,0));
+        putText (frameinfo->image, obj_id,
+            cv::Point (centerX,centerY), kpriv->font,
+            kpriv->font_size/2,  (0,255,0), 1, 1);
 
       }
 
@@ -426,13 +440,7 @@ overlay_node_foreach (GNode * node, gpointer kpriv_ptr)
                 prediction->bbox.y + frameinfo->y_offset), kpriv->font,
             kpriv->font_size, Scalar (kpriv->label_color.blue,
                kpriv->label_color.green, kpriv->label_color.red), 1, 1);
-         // 
-         // Put text at the center of box
-          putText (frameinfo->image, label_string,
-            cv::Point (prediction->bbox.x+prediction->bbox.width,
-            prediction->bbox.y + prediction->bbox.height), kpriv->font,
-            kpriv->font_size, Scalar (kpriv->label_color.blue,
-               kpriv->label_color.green, kpriv->label_color.red), 1, 1);
+
          */
 
         }
