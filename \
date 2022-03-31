@@ -1,0 +1,3 @@
+./build.sh /opt/petalinux/2021.1 
+scp ./build/smartcam-1.0.1-1.aarch64.rpm petalinux@192.168.1.37:/home/petalinux
+
