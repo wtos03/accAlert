@@ -10,5 +10,5 @@
 #define  OBJECT_SIZE 500
 #define  MID_SCREEN_X 800 //Resolution /2
 #define  MID_SCREEN_LIMIT 50  
-#define  OBJECT_OVERLAPX 100
-#define  OBJECT_OVERLAPY 100
+#define  OBJECT_OVERLAPX 180
+#define  OBJECT_OVERLAPY 180

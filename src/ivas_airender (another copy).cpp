@@ -26,6 +26,7 @@
 #include <chrono>
 
 #include "ivas_airender.hpp"
+#include "accAlert.h"
 
 int log_level = LOG_LEVEL_WARNING;
 
@@ -38,22 +39,7 @@ using namespace std;
 #define MAX_ALLOWED_CLASS 20
 #define MAX_ALLOWED_LABELS 20
 
-// invtos --------------
-
-#define  GET_VALUE     1
-#define  SET_VALUE     0
-#define  GET_NO_OBJECT 0
-#define  COUNT_OBJECT  1
-#define  CHK_ACCIDENT  2
-#define  MAX_OBJECT 20
-
-// Define variable for Crash Algorithm
-#define  OBJECT_DISTANCE 500
-#define  OBJECT_OVERLAPX 100
-#define  OBJECT_OVERLAPY 100
-
-
-// ---------------------
+ 
 
 struct color
 {
@@ -130,14 +116,18 @@ bool crash_algorithm ( int *x,int *y,int *width,int *height,int object)
    bool accident_status = false;
    
 
-   printf (" Number of object :  %d \n",object);
+  // printf (" Number of object :  %d \n",object);
    for (i = 0 ; i < object ; i++)
    {
+     
      // Check object size more than specific size may be accident
-     accident_status  = ((*(width+i)> OBJECT_DISTANCE) && (*(height+i) > OBJECT_DISTANCE));
+     accident_status  = ((*(width+i)> OBJECT_SIZE) && (*(height+i) > OBJECT_SIZE) && (abs(*(x+i)- MID_SCREEN_X) < MID_SCREEN_LIMIT));
      if (accident_status)
-          break;
-
+     {
+        printf ("Object width : %d  Height : %d  X = %d \n",*(width+i),*(height+i), *(x+i));
+        get_set_accident_status (SET_VALUE,accident_status);
+        break;
+     }
      // Check overlap of object more than thredhold mean accident may occur
       j = i+1;
       if ( j >= object )
@@ -161,7 +151,7 @@ bool crash_algorithm ( int *x,int *y,int *width,int *height,int object)
             }
        }
       }
-      printf (" Object: %d J: %d CenterX: %d CenterY: %d DeltaX: %d DeltaY: %d Accident status : %d \n" ,i,j,*(x+i), *(y+i),deltaX,deltaY,accident_status);
+  //    printf (" Object: %d J: %d CenterX: %d CenterY: %d DeltaX: %d DeltaY: %d Accident status : %d \n" ,i,j,*(x+i), *(y+i),deltaX,deltaY,accident_status);
    }
    return accident_status;
 }
@@ -188,7 +178,7 @@ int save_object (int action, int x, int y, int w, int h)
   if (action == CHK_ACCIDENT )
   {
     crash_algorithm (centerX, centerY,width,height, no_object);
-    printf (" ***** Accident Status from each frame : %d  ***** \n",get_set_accident_status(GET_VALUE,0));
+ //   printf (" ***** Accident Status from each frame : %d  ***** \n",get_set_accident_status(GET_VALUE,0));
     no_object = 0;  // Start new frame ??
   }
   return no_object;
@@ -354,17 +344,7 @@ overlay_node_foreach (GNode * node, gpointer kpriv_ptr)
       unsigned short uvScalar;
       convert_rgb_to_yuv_clrs (clr, &yScalar, &uvScalar);
       /* Draw rectangle on y an uv plane */
-      /*
-      int new_xmin = floor (prediction->bbox.x / 2) * 2;
-      int new_ymin = floor (prediction->bbox.y / 2) * 2;
-      int new_xmax =
-          floor ((prediction->bbox.width + prediction->bbox.x) / 2) * 2;
-      int new_ymax =
-          floor ((prediction->bbox.height + prediction->bbox.y) / 2) * 2;
-
-      int centerX = new_xmin+prediction->bbox.width/2;
-      int centerY = new_ymin + prediction->bbox.height/2;
-      */
+      
       Size test_rect (new_xmax - new_xmin, new_ymax - new_ymin);
 
       
@@ -377,7 +357,7 @@ overlay_node_foreach (GNode * node, gpointer kpriv_ptr)
               new_ymax / 2), Scalar (uvScalar), kpriv->line_thickness, 1, 0);
 
         // invtos Put text at the center of box
-        sprintf (obj_id,"%d",save_object(GET_NO_OBJECT,0,0,0,0));
+      /*  sprintf (obj_id,"%d",save_object(GET_NO_OBJECT,0,0,0,0));
         putText (frameinfo->lumaImg, obj_id,
             cv::Point (centerX,centerY), kpriv->font,
             kpriv->font_size/2,  (0,255,0), 1, 1);
@@ -385,7 +365,8 @@ overlay_node_foreach (GNode * node, gpointer kpriv_ptr)
         putText (frameinfo->chromaImg, obj_id,
             cv::Point (centerX,centerY), kpriv->font,
             kpriv->font_size/2,(0,255,0), 1, 1);
-      }
+     */
+     }
 
       if (label_present) {
         /* Draw filled rectangle for labelling, both on y and uv plane */

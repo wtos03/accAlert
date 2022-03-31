@@ -6,6 +6,8 @@
 
 #IncludeRegexTransform: 
 
+/home/tos/kria/accAlert/src/accAlert.h
+
 /home/tos/kria/accAlert/src/ivas_airender.cpp
 opencv2/core.hpp
 -
@@ -29,6 +31,8 @@ chrono
 -
 ivas_airender.hpp
 /home/tos/kria/accAlert/src/ivas_airender.hpp
+accAlert.h
+/home/tos/kria/accAlert/src/accAlert.h
 
 /home/tos/kria/accAlert/src/ivas_airender.hpp
 

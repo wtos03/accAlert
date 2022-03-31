@@ -116,7 +116,7 @@ bool crash_algorithm ( int *x,int *y,int *width,int *height,int object)
    bool accident_status = false;
    
 
-  // printf (" Number of object :  %d \n",object);
+   printf (" Number of object :  %d \n",object);
    for (i = 0 ; i < object ; i++)
    {
      
@@ -138,7 +138,8 @@ bool crash_algorithm ( int *x,int *y,int *width,int *height,int object)
        { // Comapre X and Y
             deltaX  = abs(*(x+i) - *(x+j));
             deltaY = abs(*(y+i) - *(y+j));
-            if ((deltaX < OBJECT_OVERLAPX) && (deltaY < OBJECT_OVERLAPY))
+ //           if ((deltaX < OBJECT_OVERLAPX) || (deltaY < OBJECT_OVERLAPY))
+            if ((deltaX < OBJECT_OVERLAPX) )
             {
                accident_status  = true;
                get_set_accident_status (SET_VALUE,accident_status);
@@ -150,9 +151,9 @@ bool crash_algorithm ( int *x,int *y,int *width,int *height,int object)
                get_set_accident_status (SET_VALUE,accident_status);
             }
        }
+       printf (" Object: %d J: %d CenterX: %d CenterY: %d DeltaX: %d DeltaY: %d Accident status : %d \n" ,i,j,*(x+i), *(y+i),deltaX,deltaY,accident_status);
       }
-  //    printf (" Object: %d J: %d CenterX: %d CenterY: %d DeltaX: %d DeltaY: %d Accident status : %d \n" ,i,j,*(x+i), *(y+i),deltaX,deltaY,accident_status);
-   }
+    }
    return accident_status;
 }
 
@@ -255,8 +256,9 @@ get_label_text (GstInferenceClassification * c, ivas_xoverlaypriv * kpriv,
       sprintf (label_string + buffIdx, "%s", (char *) c->class_label);
       buffIdx += strlen (label_string);
     } else if (!strcmp (kpriv->label_filter[idx], "probability")) {
-      sprintf (label_string + buffIdx, " : %.2f ", c->class_prob);
-      buffIdx += strlen (label_string);
+// Cut probalility we don't use it for now     
+//      sprintf (label_string + buffIdx, " : %.2f ", c->class_prob);
+//      buffIdx += strlen (label_string);
     }
   }
   return true;
@@ -276,18 +278,7 @@ overlay_node_foreach (GNode * node, gpointer kpriv_ptr)
   /* On each children, iterate through the different associated classes */
   for (classes = prediction->classifications;
     classes; classes = g_list_next (classes)) {
-  
-    int new_xmin =  floor (prediction->bbox.x / 2) * 2;
-    int new_ymin =  floor (prediction->bbox.y / 2) * 2;
-    int new_xmax =  floor ((prediction->bbox.width + prediction->bbox.x) / 2) * 2;
-    int new_ymax =  floor ((prediction->bbox.height + prediction->bbox.y) / 2) * 2;
-    int centerX = new_xmin+prediction->bbox.width/2;
-    int centerY = new_ymin + prediction->bbox.height/2;
-    int width = prediction->bbox.width;
-    int height = prediction->bbox.height;
 
-
-    save_object(COUNT_OBJECT,centerX,centerY,width,height);
     classification = (GstInferenceClassification *) classes->data;
 
     int idx = ivas_classification_is_allowed ((char *)
@@ -312,6 +303,24 @@ overlay_node_foreach (GNode * node, gpointer kpriv_ptr)
     bool label_present;
     Size textsize;
     label_present = get_label_text (classification, kpriv, label_string);
+
+  
+    if (strcmp (label_string,"car"))
+    {
+      continue;   // Skip other class interest only car
+    }
+
+// ------ Added by invtos -------------------
+    int new_xmin =  floor (prediction->bbox.x / 2) * 2;
+    int new_ymin =  floor (prediction->bbox.y / 2) * 2;
+    int new_xmax =  floor ((prediction->bbox.width + prediction->bbox.x) / 2) * 2;
+    int new_ymax =  floor ((prediction->bbox.height + prediction->bbox.y) / 2) * 2;
+    int centerX = new_xmin+prediction->bbox.width/2;
+    int centerY = new_ymin + prediction->bbox.height/2;
+    int width = prediction->bbox.width;
+    int height = prediction->bbox.height;
+    save_object(COUNT_OBJECT,centerX,centerY,width,height);
+  // ---------------------------------------------- 
     
    if (label_present) {
       int baseline;
