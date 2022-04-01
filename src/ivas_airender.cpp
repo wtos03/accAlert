@@ -132,14 +132,14 @@ bool crash_algorithm ( int *x,int *y,int *width,int *height,int object)
        for (j ; j < object ; j++)
        { // If distance between Xmin of Object1 and Xmax of Object2 < summation of two object width
          // This mean ovelap occured
-         // Compare x(i) or x(j)
-         if (*(x+i) > *(x+j))
+         // Compare x(i) or x(j) is the Xmin
+         if (*(x+i) > *(x+j))    
          {
-              lengthX = ((*(x+i)+*(width+i)) - *(x+j));
+              lengthX = ((*(x+i)+*(width+i)) - *(x+j));  // x(j) is Xmin
          }
          else
          {
-              lengthX = ((*(x+j)+*(width+j)) - *(x+i));
+              lengthX = ((*(x+j)+*(width+j)) - *(x+i));  // x(i) is Xmin
          }
          deltaX = (lengthX -(*(width+i)+*(width+j)));
           if (*(y+i) > *(y+j))
